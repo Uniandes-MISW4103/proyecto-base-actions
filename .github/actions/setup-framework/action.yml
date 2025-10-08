@@ -1,0 +1,64 @@
+name: 'Setup Framework Action'
+description: 'Sets up a testing framework in a target repository'
+
+inputs:
+  framework:
+    description: 'Framework de automatización'
+    required: true
+  repository:
+    description: 'Target repository to update'
+    required: true
+  token:
+    description: 'GitHub token with repository access'
+    required: true
+    default: ${{ github.token }}
+
+permissions:
+  contents: write
+  packages: read
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version: "lts/iron"
+
+    - name: Checkout Target Repository
+      uses: actions/checkout@v4
+      with:
+        repository: ${{ inputs.repository }}
+        path: target-repo
+
+    - name: Checkout Base Repo
+      uses: actions/checkout@v4
+      with:
+        repository: Uniandes-MISW4103/proyecto-${{ inputs.framework }}-template
+        path: base-repo
+
+    - name: Copy Base Contents
+      shell: bash
+      run: |
+        echo "Copying files from base-repo to target-repo"
+        rsync -a --exclude='.git' --exclude='package-lock.json' base-repo/ target-repo/e2e/misw-4103-${{ inputs.framework }}/
+        echo "Files copied successfully"
+
+    - name: Set Framework Scripts
+      shell: bash
+      run: |
+        echo "Setting up framework scripts for ${{ inputs.framework }} to main package.json"
+        cd target-repo
+        npm pkg set scripts.${{ inputs.framework }}:install="npm install -w misw-4103-${{ inputs.framework }}"
+        npm pkg set scripts.${{ inputs.framework }}:prepare="npm run prepare -w misw-4103-${{ inputs.framework }}"
+        npm pkg set scripts.${{ inputs.framework }}:test="npm run test -w misw-4103-${{ inputs.framework }}"
+        npm pkg set scripts.${{ inputs.framework }}:ui="npm run test:ui -w misw-4103-${{ inputs.framework }}"
+
+    - name: Commit Changes to Target
+      shell: bash
+      run: |
+        cd target-repo; 
+        git config user.name "Equipo Docente MISW4103";
+        git config user.email "equipo-docente-misw4103@uniandes.edu.co";
+        git add .;
+        git commit -m "chore: initial setup for ${{ inputs.framework }} framework";
+        git push origin HEAD;
