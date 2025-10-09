@@ -48,7 +48,7 @@ runs:
       run: |
         echo "Setting up framework scripts for ${{ inputs.framework }} to main package.json"
         cd target-repo
-        npm pkg set scripts.${{ inputs.framework }}:install="npm install -w misw-4103-${{ inputs.framework }}"
+        npm pkg set scripts.${{ inputs.framework }}:install="npm install --install-strategy=nested -w misw-4103-${{ inputs.framework }}"
         npm pkg set scripts.${{ inputs.framework }}:prepare="npm run prepare -w misw-4103-${{ inputs.framework }}"
         npm pkg set scripts.${{ inputs.framework }}:test="npm run test -w misw-4103-${{ inputs.framework }}"
         npm pkg set scripts.${{ inputs.framework }}:ui="npm run test:ui -w misw-4103-${{ inputs.framework }}"
