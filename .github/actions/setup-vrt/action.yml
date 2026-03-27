@@ -1,9 +1,9 @@
-name: 'Setup VRT Action'
-description: 'Sets up a Visual Regression Testing framework in a target repository'
+name: "Setup VRT Action"
+description: "Sets up a Visual Regression Testing framework in a target repository"
 
 inputs:
   framework:
-    description: 'Framework de regresión visual'
+    description: "Framework de regresión visual"
     required: true
     type: choice
     options:
@@ -11,10 +11,10 @@ inputs:
       - pixelmatch
       - backstopjs
   repository:
-    description: 'Target repository to update'
+    description: "Target repository to update"
     required: true
   token:
-    description: 'GitHub token with repository access'
+    description: "GitHub token with repository access"
     required: true
     default: ${{ github.token }}
 
@@ -27,18 +27,20 @@ runs:
   steps:
     - uses: actions/setup-node@v4
       with:
-        node-version: "lts/iron"
+        node-version: "22"
 
     - name: Checkout Target Repository
       uses: actions/checkout@v4
       with:
         repository: ${{ inputs.repository }}
+        token: ${{ inputs.token }}
         path: target-repo
 
     - name: Checkout Base Repo
       uses: actions/checkout@v4
       with:
         repository: Uniandes-MISW4103/proyecto-${{ inputs.framework }}-template
+        token: ${{ inputs.token }}
         path: base-repo
 
     - name: Copy Base Contents
@@ -56,6 +58,14 @@ runs:
         npm pkg set scripts.${{ inputs.framework }}:install="npm install --install-strategy=nested -w misw-4103-${{ inputs.framework }}"
         npm pkg set scripts.${{ inputs.framework }}:prepare="npm run prepare -w misw-4103-${{ inputs.framework }}"
         npm pkg set scripts.${{ inputs.framework }}:test="npm run test -w misw-4103-${{ inputs.framework }}"
+        if [ "${{ inputs.framework }}" = "backstopjs" ]; then
+          npm pkg set scripts.${{ inputs.framework }}:reference="npm run reference -w misw-4103-${{ inputs.framework }}"
+          npm pkg set scripts.${{ inputs.framework }}:approve="npm run approve -w misw-4103-${{ inputs.framework }}"
+          npm pkg set scripts.${{ inputs.framework }}:ui="npm run test:ui -w misw-4103-${{ inputs.framework }}"
+        fi
+        if [ "${{ inputs.framework }}" = "pixelmatch" ] || [ "${{ inputs.framework }}" = "resemblejs" ]; then
+          npm pkg set scripts.${{ inputs.framework }}:report="npm run report -w misw-4103-${{ inputs.framework }}"
+        fi
 
     - name: Commit Changes to Target
       shell: bash
