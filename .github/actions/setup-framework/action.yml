@@ -1,15 +1,15 @@
-name: 'Setup Framework Action'
-description: 'Sets up a testing framework in a target repository'
+name: "Setup Framework Action"
+description: "Sets up a testing framework in a target repository"
 
 inputs:
   framework:
-    description: 'Framework de automatización'
+    description: "Framework de automatización"
     required: true
   repository:
-    description: 'Target repository to update'
+    description: "Target repository to update"
     required: true
   token:
-    description: 'GitHub token with repository access'
+    description: "GitHub token with repository access"
     required: true
     default: ${{ github.token }}
 
@@ -22,18 +22,20 @@ runs:
   steps:
     - uses: actions/setup-node@v4
       with:
-        node-version: "lts/iron"
+        node-version: "22"
 
     - name: Checkout Target Repository
       uses: actions/checkout@v4
       with:
         repository: ${{ inputs.repository }}
+        token: ${{ inputs.token }}
         path: target-repo
 
     - name: Checkout Base Repo
       uses: actions/checkout@v4
       with:
         repository: Uniandes-MISW4103/proyecto-${{ inputs.framework }}-template
+        token: ${{ inputs.token }}
         path: base-repo
 
     - name: Copy Base Contents
@@ -48,7 +50,11 @@ runs:
       run: |
         echo "Setting up framework scripts for ${{ inputs.framework }} to main package.json"
         cd target-repo
-        npm pkg set scripts.${{ inputs.framework }}:install="npm install --install-strategy=nested -w misw-4103-${{ inputs.framework }}"
+        if [ "${{ inputs.framework }}" = "kraken" ]; then
+          npm pkg set scripts.${{ inputs.framework }}:install="npm install -w misw-4103-${{ inputs.framework }}"
+        else
+          npm pkg set scripts.${{ inputs.framework }}:install="npm install --install-strategy=nested -w misw-4103-${{ inputs.framework }}"
+        fi
         npm pkg set scripts.${{ inputs.framework }}:prepare="npm run prepare -w misw-4103-${{ inputs.framework }}"
         npm pkg set scripts.${{ inputs.framework }}:test="npm run test -w misw-4103-${{ inputs.framework }}"
         npm pkg set scripts.${{ inputs.framework }}:ui="npm run test:ui -w misw-4103-${{ inputs.framework }}"
@@ -56,9 +62,9 @@ runs:
     - name: Commit Changes to Target
       shell: bash
       run: |
-        cd target-repo; 
-        git config user.name "Equipo Docente MISW4103";
-        git config user.email "equipo-docente-misw4103@uniandes.edu.co";
-        git add .;
-        git commit -m "chore: initial setup for ${{ inputs.framework }} framework";
-        git push origin HEAD;
+        cd target-repo
+        git config user.name "Equipo Docente MISW4103"
+        git config user.email "equipo-docente-misw4103@uniandes.edu.co"
+        git add .
+        git commit -m "chore: initial setup for ${{ inputs.framework }} framework"
+        git push origin HEAD
