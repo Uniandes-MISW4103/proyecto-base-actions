@@ -3,13 +3,8 @@ description: "Sets up a Visual Regression Testing framework in a target reposito
 
 inputs:
   framework:
-    description: "Framework de regresión visual"
+    description: "Framework de regresión visual: resemblejs, pixelmatch o backstopjs"
     required: true
-    type: choice
-    options:
-      - resemblejs
-      - pixelmatch
-      - backstopjs
   repository:
     description: "Target repository to update"
     required: true
@@ -17,10 +12,6 @@ inputs:
     description: "GitHub token with repository access"
     required: true
     default: ${{ github.token }}
-
-permissions:
-  contents: write
-  packages: read
 
 runs:
   using: "composite"

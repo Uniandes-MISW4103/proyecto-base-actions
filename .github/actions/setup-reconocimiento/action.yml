@@ -3,12 +3,8 @@ description: "Sets up a testing recognition tool (Monkey or Ripper) in a target 
 
 inputs:
   tool:
-    description: "Recognition tool to setup (monkey or ripper)"
+    description: "Recognition tool to setup: monkey or ripper"
     required: true
-    type: choice
-    options:
-      - monkey
-      - ripper
   repository:
     description: "Target repository to update"
     required: true
@@ -16,10 +12,6 @@ inputs:
     description: "GitHub token with repository access"
     required: true
     default: ${{ github.token }}
-
-permissions:
-  contents: write
-  packages: read
 
 runs:
   using: "composite"

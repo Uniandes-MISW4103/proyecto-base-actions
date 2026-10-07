@@ -3,7 +3,7 @@ description: "Sets up a testing framework in a target repository"
 
 inputs:
   framework:
-    description: "Framework de automatización"
+    description: "Framework de automatización: kraken, puppeteer, playwright o cypress"
     required: true
   repository:
     description: "Target repository to update"
@@ -12,10 +12,6 @@ inputs:
     description: "GitHub token with repository access"
     required: true
     default: ${{ github.token }}
-
-permissions:
-  contents: write
-  packages: read
 
 runs:
   using: "composite"
