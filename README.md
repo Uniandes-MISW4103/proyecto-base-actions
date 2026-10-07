@@ -140,6 +140,13 @@ Each action performs the following tasks:
 5. Configures npm scripts in your package.json
 6. Commits and pushes the changes to your repository
 
+Steps 4 and 5 live in [`scripts/install-module.sh`](scripts/install-module.sh), shared by the three
+actions. The teaching team runs the same script locally to reproduce a student setup:
+
+```bash
+scripts/install-module.sh <e2e|vrt|reconocimiento> <id> <module-checkout> <student-repo-checkout>
+```
+
 ## Required Permissions
 
 All actions require the following permissions:

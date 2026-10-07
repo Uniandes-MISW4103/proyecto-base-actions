@@ -38,26 +38,12 @@ runs:
         token: ${{ inputs.token }}
         path: base-repo
 
-    - name: Copy Base Contents
+    - name: Install Module
       shell: bash
-      run: |
-        echo "Copying files from base-repo to target-repo"
-        rsync -a --exclude='.git' --exclude='package-lock.json' base-repo/ target-repo/e2e/misw-4103-${{ inputs.framework }}/
-        echo "Files copied successfully"
-
-    - name: Set Framework Scripts
-      shell: bash
-      run: |
-        echo "Setting up framework scripts for ${{ inputs.framework }} to main package.json"
-        cd target-repo
-        if [ "${{ inputs.framework }}" = "kraken" ]; then
-          npm pkg set scripts.${{ inputs.framework }}:install="npm install -w misw-4103-${{ inputs.framework }}"
-        else
-          npm pkg set scripts.${{ inputs.framework }}:install="npm install --install-strategy=nested -w misw-4103-${{ inputs.framework }}"
-        fi
-        npm pkg set scripts.${{ inputs.framework }}:prepare="npm run prepare -w misw-4103-${{ inputs.framework }}"
-        npm pkg set scripts.${{ inputs.framework }}:test="npm run test -w misw-4103-${{ inputs.framework }}"
-        npm pkg set scripts.${{ inputs.framework }}:ui="npm run test:ui -w misw-4103-${{ inputs.framework }}"
+      env:
+        MODULE_GROUP: e2e
+        MODULE_ID: ${{ inputs.framework }}
+      run: bash "$GITHUB_ACTION_PATH/../../../scripts/install-module.sh" "$MODULE_GROUP" "$MODULE_ID" base-repo target-repo
 
     - name: Commit Changes to Target
       shell: bash
