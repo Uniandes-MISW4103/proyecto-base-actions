@@ -3,12 +3,8 @@ description: "Sets up a testing recognition tool (Monkey or Ripper) in a target 
 
 inputs:
   tool:
-    description: "Recognition tool to setup (monkey or ripper)"
+    description: "Recognition tool to setup: monkey or ripper"
     required: true
-    type: choice
-    options:
-      - monkey
-      - ripper
   repository:
     description: "Target repository to update"
     required: true
@@ -17,47 +13,35 @@ inputs:
     required: true
     default: ${{ github.token }}
 
-permissions:
-  contents: write
-  packages: read
-
 runs:
   using: "composite"
   steps:
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@v7
       with:
-        node-version: "22"
+        node-version: "24"
+        # The action only runs `npm pkg set`; there are no dependencies to cache.
+        package-manager-cache: false
 
     - name: Checkout Target Repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
       with:
         repository: ${{ inputs.repository }}
         token: ${{ inputs.token }}
         path: target-repo
 
     - name: Checkout Tool Repo
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
       with:
         repository: Uniandes-MISW4103/proyecto-${{ inputs.tool }}-base
         token: ${{ inputs.token }}
         path: tool-repo
 
-    - name: Copy Base Contents
+    - name: Install Module
       shell: bash
-      run: |
-        echo "Copying files from ${{ inputs.tool }}-repo to target-repo"
-        rsync -a --exclude='.git' --exclude='package-lock.json' tool-repo/ target-repo/reconocimiento/misw-4103-${{ inputs.tool }}/
-        echo "Files copied successfully"
-
-    - name: Set Framework Scripts
-      shell: bash
-      run: |
-        echo "Setting up framework scripts for ${{ inputs.tool }} to main package.json"
-        cd target-repo
-        npm pkg set scripts.${{ inputs.tool }}:install="npm install --install-strategy=nested -w misw-4103-${{ inputs.tool }}"
-        npm pkg set scripts.${{ inputs.tool }}:prepare="npm run prepare -w misw-4103-${{ inputs.tool }}"
-        npm pkg set scripts.${{ inputs.tool }}:test="npm run test -w misw-4103-${{ inputs.tool }}"
-        npm pkg set scripts.${{ inputs.tool }}:ui="npm run test:ui -w misw-4103-${{ inputs.tool }}"
+      env:
+        MODULE_GROUP: reconocimiento
+        MODULE_ID: ${{ inputs.tool }}
+      run: bash "$GITHUB_ACTION_PATH/../../../scripts/install-module.sh" "$MODULE_GROUP" "$MODULE_ID" tool-repo target-repo
 
     - name: Commit Changes to Target
       shell: bash
