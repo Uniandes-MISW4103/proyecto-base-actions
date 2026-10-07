@@ -133,7 +133,7 @@ jobs:
 
 Each action performs the following tasks:
 
-1. Sets up Node.js with the latest LTS version
+1. Sets up Node.js 24
 2. Clones the target repository
 3. Clones the corresponding template repository based on your selection
 4. Copies the template files to the appropriate directory in your repository
@@ -149,17 +149,25 @@ scripts/install-module.sh <e2e|vrt|reconocimiento> <id> <module-checkout> <stude
 
 ## Required Permissions
 
-All actions require the following permissions:
+The job that calls an action must grant these permissions (permissions cannot be set inside an action):
 
 - `contents: write` - To push changes to your repository
 - `packages: read` - To access npm packages
 
 ## Notes
 
-- All actions use Node.js LTS (Iron) version
-- The actions will create appropriate directory structures in your repository
-- NPM workspace configuration will be added to your package.json
-- All changes are committed and pushed automatically
+- All actions use Node.js 24 (`actions/setup-node@v7`) and `actions/checkout@v7`.
+- The module is copied to `<group>/misw-4103-<id>/` (`e2e`, `vrt` or `reconocimiento`) without its
+  `.git`, `.github` and `package-lock.json`. Only npm scripts are added to the root `package.json`;
+  the npm workspaces are already declared by `proyecto-base`.
+- All changes are committed and pushed automatically to the branch the workflow ran on.
+- Callers use these actions at `@main`, and the module repositories are checked out at their default
+  branch: merging to `main` here, or in any module repository, changes what new setups receive
+  immediately.
+- Module repositories must be public: the student's `GITHUB_TOKEN` cannot read private repositories
+  of the organization.
+- Running the same setup twice without changes in the module fails at the commit step (nothing to
+  commit).
 
 ## License
 
