@@ -43,7 +43,8 @@ fi
 workspace="misw-4103-$id"
 
 echo "Copying files from $source_dir to $target_dir/$group/$workspace"
-rsync -a --exclude='.git' --exclude='package-lock.json' "$source_dir/" "$target_dir/$group/$workspace/"
+# .github is excluded so a module's own CI workflows are not copied into the student repository.
+rsync -a --exclude='.git' --exclude='.github' --exclude='package-lock.json' "$source_dir/" "$target_dir/$group/$workspace/"
 echo "Files copied successfully"
 
 echo "Setting up scripts for $id in the root package.json"
