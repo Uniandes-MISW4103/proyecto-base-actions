@@ -20,19 +20,21 @@ permissions:
 runs:
   using: "composite"
   steps:
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@v7
       with:
-        node-version: "22"
+        node-version: "24"
+        # The action only runs `npm pkg set`; there are no dependencies to cache.
+        package-manager-cache: false
 
     - name: Checkout Target Repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
       with:
         repository: ${{ inputs.repository }}
         token: ${{ inputs.token }}
         path: target-repo
 
     - name: Checkout Base Repo
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
       with:
         repository: Uniandes-MISW4103/proyecto-${{ inputs.framework }}-template
         token: ${{ inputs.token }}
