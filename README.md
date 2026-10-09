@@ -169,6 +169,46 @@ The job that calls an action must grant these permissions (permissions cannot be
 - Running the same setup twice without changes in the module fails at the commit step (nothing to
   commit).
 
+## Runner Image
+
+`docker/runner.Dockerfile` defines `ghcr.io/uniandes-misw4103/misw4103-runner`, the Linux image
+that runs every course module (Cypress, Playwright, Puppeteer, Kraken, BackstopJS, PixelMatch,
+ResembleJS, monkey and ripper). Students use it through `npm run docker -- <script>` in their
+project repository (the `runner` service of `proyecto-base/compose.yml`); the teaching team uses it
+to verify the modules and, later, to evaluate the projects in GitHub Actions.
+
+**Contents.** Debian 13 with Node.js 24, the system libraries of the tools (Cypress prerequisites,
+Playwright's Chromium dependencies, the libraries to build `canvas`), Debian's Chromium, Xvfb, git
+and rsync. It contains no course code, no `node_modules` and no tool browsers: each repository
+installs them from its own lockfile, into Docker volumes.
+
+**Entrypoint** (`docker/entrypoint.sh`). Every command runs:
+
+- as the owner of `/work`, the repository mounted from the host, so the files it writes belong to
+  the user on Linux (uid 1000 when the owner is root, as Docker Desktop reports). It starts as root
+  only to give that user the volumes Docker creates owned by root;
+- with a virtual display (`DISPLAY=:99`), which Cypress and Kraken need;
+- on `linux/arm64`, with Debian's Chromium for Puppeteer and BackstopJS, because Chrome for Testing
+  has no build for that platform.
+
+**Publishing** (`.github/workflows/publish-runner.yml`). On every push to `main` that changes
+`docker/`, on the first day of each month (security updates of the base image and Debian packages)
+and on demand, the workflow:
+
+1. builds the image for `linux/amd64` and checks it (user, display, Node.js, Chromium, git, rsync);
+2. builds it for `linux/amd64` and `linux/arm64` (QEMU) and pushes it to GHCR with the tags
+   `node24`, which `proyecto-base/compose.yml` uses, and `node24-<commit>`, a fixed tag to go back
+   to a previous image.
+
+It authenticates with the workflow's `GITHUB_TOKEN` (`packages: write`); no secret is needed. The
+GHCR package must be public so that students can pull it without logging in.
+
+To build it locally:
+
+```bash
+docker build -t ghcr.io/uniandes-misw4103/misw4103-runner:node24 -f docker/runner.Dockerfile docker
+```
+
 ## License
 
 This project is licensed under the terms of the LICENSE file in the root directory.
