@@ -73,6 +73,10 @@ case "$group:$id" in
     set_script report "npm run report -w $workspace"
     ;;
   vrt:*) ;;
+  reconocimiento:ripper)
+    set_script ui "npm run test:ui -w $workspace"
+    set_script resume "npm run resume -w $workspace"
+    ;;
   *)
     set_script ui "npm run test:ui -w $workspace"
     ;;
